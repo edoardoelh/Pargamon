@@ -32,9 +32,9 @@ class Pargammon(object):
         """
         # …
 
-    def main():
-        seed(AZAR)
-        print("*** PARGAMMON ***")
-        arams = map(int, input("Numero de columnas, fichas y dados = ").split())
-        juego = Pargammon(*params)
-        # …
+def main():
+    seed(AZAR)
+    print("*** PARGAMMON ***")
+    arams = map(int, input("Numero de columnas, fichas y dados = ").split())
+    juego = Pargammon(*params)
+    # …
