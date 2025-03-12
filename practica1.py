@@ -8,7 +8,6 @@ class Tablero(object):
         self.tablero = []
         self.crear_tablero_vacio(num_columnas)
         self.añadir_jugadores(fichas, num_fichas)
-        print("edie cabron")
 
 
     def añadir_jugadores(self,fichas, numero_fichas):
