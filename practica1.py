@@ -3,15 +3,35 @@ from random import seed, randrange, choice
 AZAR = 75 # Semilla del generador de números aleatorios
 
 # … Otras constantes, funciones y clases …
+class Tablero(object):
+    def __init__(self, num_columnas, num_fichas, fichas):
+        self.tablero = []
+        self.crear_tablero_vacio(num_columnas)
+        self.añadir_jugadores(fichas, num_fichas)
+        print("edie cabron")
 
+
+    def añadir_jugadores(self,fichas, numero_fichas):
+        for i in range(0,len(fichas)):
+            self.tablero[i][0] = fichas[i]
+            self.tablero[i][1] = numero_fichas
+
+
+
+
+
+    def crear_tablero_vacio(self, numero_columnas):
+        self.tablero = [["",0] for i in range(numero_columnas)]
 
 class Pargammon(object):
     def __init__(self, n=18, m=6, d=3, fichas=('\u263a', '\u263b')):
         self.N = n # Número de columnas
         self.M = m # Número inicial de fichas
         self.D = d # Número de dados
+        self.J = len(fichas) # Numero de jugadores
         self.FICHAS = fichas # Caracteres de las fichas de cada jugador
-        # … Resto de código de inicialización …
+        self.tablero = Tablero(self.N, self.M, self.FICHAS)
+
 
     def __repr__(self) -> str:
         """
@@ -35,6 +55,9 @@ class Pargammon(object):
 def main():
     seed(AZAR)
     print("*** PARGAMMON ***")
-    arams = map(int, input("Numero de columnas, fichas y dados = ").split())
+    params = map(int, input("Numero de columnas, fichas y dados = ").split())
     juego = Pargammon(*params)
     # …
+
+if __name__=="__main__":
+   main()
