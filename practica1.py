@@ -39,6 +39,13 @@ class Tablero(object):
     def crear_tablero_vacio(self, numero_columnas):
         self.tablero = [["",0] for i in range(numero_columnas)]
 
+    def get_jugadas_posibles(self,dados):
+        jugadas_posibles = []
+
+        #implementar generacion de jugadas
+
+        return jugadas_posibles
+
 class Pargammon(object):
     def __init__(self, n=18, m=6, d=3, fichas=('\u263a', '\u263b','\u263c')):
         self.N = n # Número de columnas
@@ -82,9 +89,7 @@ class Pargammon(object):
         return self.FICHAS[self.turno%len(self.FICHAS)]
 
     def jugar(self, txt_jugada: str) -> None | str:
-        """ Intenta realizar la jugada indicada en el string txt_jugada
-        :return: None si es válida o un string con un mensaje de error
-        """
+        jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados)
         # …
 
 def main():
