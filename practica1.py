@@ -9,6 +9,28 @@ class Tablero(object):
         self.crear_tablero_vacio(num_columnas)
         self.añadir_jugadores(fichas, num_fichas)
 
+    def __repr__(self):
+        salida = ""
+        for i in range(self.obtener_altura_tablero()):
+            salida += ""
+            for j in range(len(self.tablero)):
+                if self.tablero[j][0]=="": salida +=" "
+                else: salida += self.tablero[j][0]
+                if not j-1==len(self.tablero): salida += "|"
+            salida += "\n"
+        for i in range(len(self.tablero)):
+            salida += chr(65+i) + " "
+
+        return salida
+
+    def obtener_altura_tablero(self):
+        altura = 0
+        for columna in self.tablero:
+            if columna[1] > altura:
+                altura = columna[1]
+        return altura
+
+
     def añadir_jugadores(self,fichas, numero_fichas):
         for i in range(0,len(fichas)):
             self.tablero[i][0] = fichas[i]
@@ -31,10 +53,9 @@ class Pargammon(object):
 
 
     def __repr__(self) -> str:
-        """
-        :return: Un string que indica el tablero y estado de la partida
-        """
-        # …
+        salida = f"JUGADA #{self.turno + 1}\n"
+        salida += str(self.tablero)
+        return salida
 
     def imagen_dado (self):
         # devuelve el la cara de dado que haya salido
@@ -68,6 +89,7 @@ def main():
     print("*** PARGAMMON ***")
     params = map(int, input("Numero de columnas, fichas y dados = ").split())
     juego = Pargammon(*params)
+    print(juego)
     # …
 
 if __name__=="__main__":
