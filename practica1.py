@@ -40,21 +40,22 @@ class Tablero(object):
         self.tablero = [["",0] for i in range(numero_columnas)]
 
 class Pargammon(object):
-    def __init__(self, n=18, m=6, d=3, fichas=('\u263a', '\u263b')):
+    def __init__(self, n=18, m=6, d=3, fichas=('\u263a', '\u263b','\u263c')):
         self.N = n # Número de columnas
         self.M = m # Número inicial de fichas
         self.D = d # Número de dados
         self.J = len(fichas) # Numero de jugadores
         self.FICHAS = fichas # Caracteres de las fichas de cada jugador
         self.tablero = Tablero(self.N, self.M, self.FICHAS)
-        self.turno = 0 # Para el wey que le toca tirar
+        self.turno = -1 # Para el wey que le toca tirar
         self.dados = [] #Para guardar la ultima tirada de dados y esta luego ponerla en un array con todas las tiradas de la partida
         self.historial_dados = []
 
 
     def __repr__(self) -> str:
         salida = f"JUGADA #{self.turno + 1}\n"
-        salida += str(self.tablero)
+        salida += str(self.tablero) + "\n"
+        salida += f"Turno de {self.obtener_jugador_actual()}: {self.imagen_dado()}"
         return salida
 
     def imagen_dado (self):
@@ -69,14 +70,16 @@ class Pargammon(object):
         """ Cambia de turno. Devuelve True si es fin de partida, False si no """
         # …
         self.turno+= 1 #cambio turno
-        if self.turno >= self.J:
-            self.turno=0
         # La tirada de dados se debe realizar con esta línea:
         self.dados = [randrange(6) + 1 for _ in range(self.D)] #estas dos lineas de los dados podriamos hacerlo en una funcion pequeñas, como veas
         self.historial_dados += [self.dados[:]]
+        print(self)
+        #Aqui se tiene que añadir una concicion que compruebe si se ha terminado la partida, en ese caso retorna un False
 
-        print(f"Turno de {self.FICHAS[self.turno]}: {self.imagen_dado()}")
-        # …
+        return True #Devuelve un True cuando puede cambiar el turno, dejara de poder cambiar el turno al haberse terminado la partida
+
+    def obtener_jugador_actual(self):
+        return self.FICHAS[self.turno%len(self.FICHAS)]
 
     def jugar(self, txt_jugada: str) -> None | str:
         """ Intenta realizar la jugada indicada en el string txt_jugada
@@ -89,8 +92,10 @@ def main():
     print("*** PARGAMMON ***")
     params = map(int, input("Numero de columnas, fichas y dados = ").split())
     juego = Pargammon(*params)
-    print(juego)
-    # …
+    while juego.cambiar_turno():
+        juego.jugar(input("Jugada: "))
+
+
 
 if __name__=="__main__":
    main()
