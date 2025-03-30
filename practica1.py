@@ -1,5 +1,4 @@
 from random import seed, randrange, choice
-import copy
 
 AZAR = 75 # Semilla del generador de números aleatorios
 
@@ -63,10 +62,11 @@ class Tablero(object):
 
     def comprobar_movimientos(self, casillas, movimientos, jugador, tablero=None):
         if tablero is None:
-            tablero = copy.deepcopy(self.tablero)
+            #tablero = copy.deepcopy(self.tablero)
+            tablero = self.realizar_copia_tablero(self.tablero)#Esto se encarga de realizar una pseudo sobrecarga del metodo
         print("Llega aqui")
         movimientos_posibles = True
-        tablero_virtual = tablero.copy()
+        tablero_virtual = self.realizar_copia_tablero(tablero)
         for i in range(len(movimientos)):
             if movimientos_posibles:
                 print(self.comprobar_movimiento(casillas[i], movimientos[i], jugador, tablero_virtual))
@@ -117,7 +117,10 @@ class Tablero(object):
                     jugadas.append(jugada)
             else:
                 jugada.append(-1)
-        return jugadas    
+        return jugadas
+
+    def realizar_copia_tablero(self,tablero):
+        return [[j for j in casilla] for casilla in tablero]
             
 
 
