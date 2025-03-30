@@ -1,4 +1,5 @@
 from random import seed, randrange, choice
+import copy
 
 AZAR = 75 # Semilla del generador de números aleatorios
 
@@ -56,16 +57,16 @@ class Tablero(object):
         if casilla + movimiento > len(tablero)+1:
             movimiento_posible = False #el intento de movimiento se pasa del maximo del tablero
         if casilla + movimiento < len(tablero):
-            if(tablero[casilla][0] != jugador): movimiento_posible = False #La casilla pertenece a otro jugador
+            if tablero[casilla][0] != jugador: movimiento_posible = False #La casilla pertenece a otro jugador
             if tablero[casilla + movimiento][0]!=jugador and tablero[casilla + movimiento][1]>1: movimiento_posible = False #El otro jugador tiene mas de una ficha en su columna
         return movimiento_posible
 
-    def comprobar_movimientos(self, casillas, movimientos, jugador, tablero= None):
+    def comprobar_movimientos(self, casillas, movimientos, jugador, tablero=None):
         if tablero is None:
-            tablero = self.tablero
+            tablero = copy.deepcopy(self.tablero)
         print("Llega aqui")
         movimientos_posibles = True
-        tablero_virtual = tablero
+        tablero_virtual = tablero.copy()
         for i in range(len(movimientos)):
             if movimientos_posibles:
                 print(self.comprobar_movimiento(casillas[i], movimientos[i], jugador, tablero_virtual))
@@ -81,7 +82,7 @@ class Tablero(object):
         if tablero is None:
             tablero = self.tablero
         movimiento_realizado = True
-        if self.comprobar_movimiento(casilla, movimiento, jugador, tablero):
+        if not self.comprobar_movimiento(casilla, movimiento, jugador, tablero):
             movimiento_realizado = False
         else:
             if tablero[casilla + movimiento][0]!=jugador and tablero[casilla + movimiento][1]==1:
@@ -90,6 +91,8 @@ class Tablero(object):
             else:
                 tablero[casilla + movimiento][0] = jugador
                 tablero[casilla + movimiento][1] += 1
+                tablero[casilla][1] -= 1
+                if tablero[casilla][1]==0: tablero[casilla][0] = ''
         return movimiento_realizado
 
     def get_jugadas_posibles(self,dados, jugador):
@@ -161,13 +164,20 @@ class Pargammon(object):
         return self.FICHAS[self.turno%len(self.FICHAS)]
 
     def jugar(self, txt_jugada: str) -> None | str:
+        jugada_realizada = False
         jugador_actual=self.obtener_jugador_actual()
 #Aqui se tiene que añadir una funcion que compruebe que el texto introducido es valido y que la cantidad de caracteres no supera las de los dados
-        movimientos:list = [ord(c.lower()) - ord('a') for c in txt_jugada]
-        jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
-        if self.tablero.comprobar_movimientos(movimientos, self.dados, jugador_actual):
-            for i in range(len(movimientos)):
-                self.tablero.realizar_movimiento(movimientos[i], self.dados[i], jugador_actual)
+
+        #Esta funcion esta dando problemas, por ahora me centrare en hacer que funcione la realizacion de jugadas
+        #jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
+
+        while not jugada_realizada:
+            movimientos: list = [ord(c.lower()) - ord('a') for c in txt_jugada]
+            if self.tablero.comprobar_movimientos(movimientos, self.dados, jugador_actual):
+                for i in range(len(movimientos)):
+                    jugada_realizada = self.tablero.realizar_movimiento(movimientos[i], self.dados[i], jugador_actual)
+            else:
+                txt_jugada = input("Algo ha fallado prueba otra vez: ")
         # …
 
 def main():
