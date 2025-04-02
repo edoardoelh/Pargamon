@@ -99,6 +99,17 @@ class Tablero(object):
         return movimiento_posible
 
     def comprobar_movimientos(self, casillas, movimientos, jugador, tablero=None):
+        """
+        Funcion que realiza la comprobacion de multiples movimientos, se toma el mismo indice de la lista casillas y
+            de la lista movimientos para la comprobacion de los mismos, a su vez se realiza una copia del tablero
+            para no afectar al tablero pasado como parametro.
+        :param casillas: Lista de casillas en las que se comprobara si se pueden hacer los movimientos
+        :param movimientos: Lista del resultado de los dados correspondiente al movimiento que se espera realizar
+            con las fichas de las casillas.
+        :param jugador: Caracter del jugador en el que se van a comprobar los movimientos
+        :param tablero: (Tablero, opcional)Tablero en el que se quiere realizar la comprobacion
+        :return: Devuelve un Booleano correspondiente a si se pueden realizar los movimientos a comprobar
+        """
         if tablero is None:#Esto se encarga de realizar una pseudo sobrecarga del metodo
             tablero = self.realizar_copia_tablero()
         movimientos_posibles = True
@@ -115,6 +126,15 @@ class Tablero(object):
 
 
     def realizar_movimiento(self, casilla, movimiento, jugador, tablero = None):
+        """
+        Funcion que intenta la realizacion del movimiento en el tablero especificado como parametro, en caso de no
+            especificar uno, utilizara el tablero perteneciente al atributo del objeto.
+        :param casilla: Entero que indica el indice de la casilla en la que se espera realizar el movimiento
+        :param movimiento: Entero correspondiente al dado que especifica la distancia que se espera que recorra la ficha
+        :param jugador: Caracter del jugador en el que se van a realizar los movimientos
+        :param tablero: (Tablero, opcional)Tablero en el que se quiere realizar el movimiento
+        :return: Devuelve un Booleano correspondiente a si se ha podido realizar el movimiento
+        """
         movimiento_realizado = True
         if casilla != -1:
             if tablero is None:
