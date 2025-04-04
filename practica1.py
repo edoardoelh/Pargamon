@@ -6,11 +6,21 @@ AZAR = 75 # Semilla del generador de números aleatorios
 # … Otras constantes, funciones y clases …
 class Tablero(object):
     def __init__(self, num_columnas, num_fichas, fichas):
+        """
+        Constructror del tablero, añade las columnas especificadas y las fichas de cada jugador.
+        :param num_columnas: Entero con el numero de columnas a insertar en el tablero.
+        :param num_fichas: Entero con el numero de fichas a incluir a cada jugador.
+        :param fichas: Lista con los caracteres de los jugadores que se incluiran en el tablero
+        """
         self.tablero = []
         self.crear_tablero_vacio(num_columnas)
         self.añadir_jugadores(fichas, num_fichas)
 
     def __repr__(self):
+        """
+        Funcion que retorna la representacion en un string, como un jugador humnano veria el tablero.
+        :return:
+        """
         salida = ""
         altura_tablero = self.obtener_altura_tablero()
         for i in range(altura_tablero):
@@ -29,10 +39,8 @@ class Tablero(object):
 
     def obtener_altura_tablero(self):
         """
-        Retorna un numero entero perteneciente a la cantidad de fichas de la columna con mayor numero de los mismas
-
-        :return:
-        altura_tablero(int):Numero correspondiente a la cantidad de fichas de la cosilla con mas fichas
+        Retorna un numero entero perteneciente a la cantidad de fichas de la columna con mayor numero de los mismas.
+        :return: Entero correspondiente a la cantidad de fichas de la cosilla con mas fichas.
         """
         altura = 0
         for columna in self.tablero:
@@ -43,10 +51,9 @@ class Tablero(object):
 
     def añadir_jugadores(self,fichas, numero_fichas):
         """
-        Coloca las fichas en el tablero en funcion de los jugadores especificados y el numero de fichas dadas
-        :param fichas: Array de caracteres que seran las representaciones de las fichas de los jugadores
-        :param numero_fichas: Numero de fichas que se le asignaran a cada jugador
-        :return:
+        Coloca las fichas en el tablero en funcion de los jugadores especificados y el numero de fichas dadas.
+        :param fichas: Array de caracteres que seran las representaciones de las fichas de los jugadores.
+        :param numero_fichas: Numero de fichas que se le asignaran a cada jugador.
         None
         """
         for i in range(0,len(fichas)):
@@ -56,17 +63,16 @@ class Tablero(object):
     def crear_tablero_vacio(self, numero_columnas):
         """
         Crea un tablero con tantas casillas como se le pasen por parametro
-        :param numero_columnas: Numero de casillas que tendra el tablero
-        :return:
+        :param numero_columnas: Numero de casillas que tendra el tablero.
         """
         self.tablero = [["",0] for i in range(numero_columnas)]
 
     def obtener_indice_columnas_usables(self, jugador, tablero = None):
         """
-        Retorna un array de indices de las casillas del tablero que pertenecen al jugador
-        :param jugador: Caracter de la ficha del jugador a consultar
-        :param tablero:
-        :return int[]: Lista de los indices del tablero que pertenecen al jugador consultado
+        Retorna un array de indices de las casillas del tablero que pertenecen al jugador.
+        :param jugador: Caracter de la ficha del jugador a consultar.
+        :param tablero: Tablero en el que realizara la comprobacion.
+        :return int[]: Lista de los indices del tablero que pertenecen al jugador consultado.
         """
         if tablero is None:
             tablero = self.tablero
@@ -78,12 +84,13 @@ class Tablero(object):
 
     def comprobar_movimiento(self, casilla, movimiento, jugador, tablero = None):
         """
-        Retorna un valor booleano correspondiente a si se puede realizar el moviminto solicitado
-        :param casilla: Casilla que contiene la ficha del jugador a mover (De no tratarse de una ficha del jugador la funcion devuelve False)
-        :param movimiento: Entero que determina la distancia a moverse por el jugador
-        :param jugador: Caracter de la ficha del jugador a comprobar
+        Retorna un valor booleano correspondiente a si se puede realizar el moviminto solicitado.
+        :param casilla: Casilla que contiene la ficha del jugador a mover (De no tratarse de una ficha
+            del jugador la funcion devuelve False).
+        :param movimiento: Entero que determina la distancia a moverse por el jugador.
+        :param jugador: Caracter de la ficha del jugador a comprobar.
         :param tablero: (tablero, optional) Tablero en el que realizara la comprobacion, en el caso de que no
-                        se especifique, usara el tablero perteneciente al objeto
+                        se especifique, usara el tablero perteneciente al objeto.
         :return: Boleano que especifica si se puede realizar la jugada consultada o no.
         """
 
@@ -103,12 +110,12 @@ class Tablero(object):
         Funcion que realiza la comprobacion de multiples movimientos, se toma el mismo indice de la lista casillas y
             de la lista movimientos para la comprobacion de los mismos, a su vez se realiza una copia del tablero
             para no afectar al tablero pasado como parametro.
-        :param casillas: Lista de casillas en las que se comprobara si se pueden hacer los movimientos
+        :param casillas: Lista de casillas en las que se comprobara si se pueden hacer los movimientos.
         :param movimientos: Lista del resultado de los dados correspondiente al movimiento que se espera realizar
             con las fichas de las casillas.
-        :param jugador: Caracter del jugador en el que se van a comprobar los movimientos
-        :param tablero: (Tablero, opcional)Tablero en el que se quiere realizar la comprobacion
-        :return: Devuelve un Booleano correspondiente a si se pueden realizar los movimientos a comprobar
+        :param jugador: Caracter del jugador en el que se van a comprobar los movimientos.
+        :param tablero: (Tablero, opcional)Tablero en el que se quiere realizar la comprobacion.
+        :return: Devuelve un Booleano correspondiente a si se pueden realizar los movimientos a comprobar.
         """
         if tablero is None:#Esto se encarga de realizar una pseudo sobrecarga del metodo
             tablero = self.realizar_copia_tablero()
@@ -129,11 +136,12 @@ class Tablero(object):
         """
         Funcion que intenta la realizacion del movimiento en el tablero especificado como parametro, en caso de no
             especificar uno, utilizara el tablero perteneciente al atributo del objeto.
-        :param casilla: Entero que indica el indice de la casilla en la que se espera realizar el movimiento
-        :param movimiento: Entero correspondiente al dado que especifica la distancia que se espera que recorra la ficha
-        :param jugador: Caracter del jugador en el que se van a realizar los movimientos
-        :param tablero: (Tablero, opcional)Tablero en el que se quiere realizar el movimiento
-        :return: Devuelve un Booleano correspondiente a si se ha podido realizar el movimiento
+        :param casilla: Entero que indica el indice de la casilla en la que se espera realizar el movimiento.
+        :param movimiento: Entero correspondiente al dado que especifica la distancia que se espera que recorra
+            la ficha.
+        :param jugador: Caracter del jugador en el que se van a realizar los movimientos.
+        :param tablero: (Tablero, opcional)Tablero en el que se quiere realizar el movimiento.
+        :return: Devuelve un Booleano correspondiente a si se ha podido realizar el movimiento.
         """
         movimiento_realizado = True
         if casilla != -1:
@@ -153,12 +161,32 @@ class Tablero(object):
         return movimiento_realizado
 
     def get_jugadas_posibles(self,dados, jugador):
+        """
+        Funcion encargada de preparar y llamar a la funcion que genera un listado de jugadas posibles.
+        :param dados: Lista con los dados con los que se espera comprobar las diferentes jugadas.
+        :param jugador: Jugador en el que se van a realizar las comprobaciones.
+        :return: Lista con las jugadas posibles en funcion de los parametros dados.
+        """
         #tablero_virtual = self.tablero.copy()
         jugadas_posibles:list = self.generador_jugadas(dados, jugador, self.tablero)
         print("Jugadas posibles totales: [", *jugadas_posibles, "]", sep='\n')
         return jugadas_posibles
 
     def generador_jugadas(self, dados, jugador, tablero, jugada = None, jugadas = None):
+        """
+        Funcion encargada de generar jugadas individualmente y de manera recursivo para posteriormente asociarlas
+            a la lista total de jugadas.
+        :param dados: Lista con los dados con los que se espera comprobar las diferentes jugadas.
+        :param jugador: Jugador en el que se van a realizar las comprobaciones.
+        :param tablero: Tablero en el que se van a realizar las jugadas.
+        :param jugada: (Lista, opcional) Jugada actual, se utiliza para almacenar la jugada realizada hasta el momento
+            en la recursividad.
+        :param jugadas: (Lista, opcional) Listado completo de jugadas, al estar pasado por referencia, la lista es la
+            misma para todas las iteraciones de la funcion, por lo que se utiliza para que desde cualquier punto de
+            ejecucion, la lista sea igualmente accesible.
+        :return: Lista con las jugadas posibles en funcion de los parametros dados (Al pasarse por referencia este
+            return no es del todo necesario)
+        """
         if jugada is None: jugada = []
         if jugadas is None: jugadas = []
         columnas_usables = self.obtener_indice_columnas_usables(jugador, tablero)
