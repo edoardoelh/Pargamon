@@ -1,6 +1,7 @@
 from random import seed, randrange, choice
 import pydoc
 
+#T2  X6
 #Edgar Lopez Herrera
 #Miguel Llorente Herrero
 
@@ -147,21 +148,61 @@ class Tablero(object):
         :return: Devuelve un Booleano correspondiente a si se ha podido realizar el movimiento.
         """
         movimiento_realizado = True
-        if casilla != -1:
-            if tablero is None:
-                tablero = self.tablero
-            if not self.comprobar_movimiento(casilla, movimiento, jugador, tablero):
-                movimiento_realizado = False
+        if casilla == -1:  # si la casilla es -1 es la @ no hay movimiento
+            return True
+
+        if tablero is None:
+            tablero = self.tablero
+
+        if not self.comprobar_movimiento(casilla, movimiento, jugador, tablero):
+            movimiento_realizado = False  # si el movimiento no es valido no se hace
+
+        else:
+            # verificar una unica ficha enemiga en esa casilla
+            if tablero[casilla + movimiento][0] != jugador and tablero[casilla + movimiento][1] == 1:
+                jugador_enemigo = tablero[casilla + movimiento][0]
+                self.cambiar_ficha_comida(casilla + movimiento, jugador_enemigo, tablero)  # cambiar ficha comida
+                tablero[casilla + movimiento][0] = jugador  # colocar ficha jugador que "conquista" la casilla
+                tablero[casilla + movimiento][1] = 1
+
             else:
-                if tablero[casilla + movimiento][0] != jugador and tablero[casilla + movimiento][1] == 1:
-                    tablero[casilla + movimiento][0] = jugador
-#FALTA: llamada a la funcion que hace que la casilla comida se mueva a donde le corresponda
-                else:
-                    tablero[casilla + movimiento][0] = jugador
-                    tablero[casilla + movimiento][1] += 1
-                    tablero[casilla][1] -= 1
-                    if tablero[casilla][1] == 0: tablero[casilla][0] = ''
-        return movimiento_realizado
+                # si es una casilla vacía o ya tiene fichas del jugador simplemente se apilan
+                tablero[casilla + movimiento][0] = jugador  # asignar nuevo jugador de la columna
+                tablero[casilla + movimiento][1] += 1  # Añadimos una ficha
+
+            tablero[casilla][1] -= 1  # quita ficha casilla de origen
+
+            if tablero[casilla][1] == 0:
+                tablero[casilla][0] = ''  # si no hay fichas limpia casilla
+
+        return movimiento_realizado  # devuelve si se ha podido hacer el movimiento
+
+    def cambiar_ficha_comida(self, posicion_comida, jugador_enemigo, tablero):
+        """
+        Mueve la ficha capturada a la primera columna válida ANTERIOR (vacía o con fichas del mismo jugador).
+        :param posicion_comida: Índice de la casilla donde se ha comido la ficha.
+        :param jugador_enemigo: Jugador al que pertenece la ficha capturada.
+        :param tablero: Estado actual del tablero.
+        """
+        #eliminar ficha comida o capturada
+        tablero[posicion_comida][1] = 0
+        tablero[posicion_comida][0] = ''
+
+        #buscar hacia atras desde la casilla comida
+        i = posicion_comida - 1
+
+        #saber si ya colocamos la ficha
+        ficha_colocada = False
+
+        while i >= 0 and not ficha_colocada:
+            propietario, cantidad = tablero[i]  #dividir la info del arrray
+
+            #casilla esta vacia o es del jugador que le comieron la ficha
+            if propietario == '' or propietario == jugador_enemigo:
+                tablero[i][0] = jugador_enemigo  #casilla para el jugador enemigo
+                tablero[i][1] += 1  #una ficha mas
+                ficha_colocada = True  #se coloco la ficha
+            i -= 1  #una columna mas pa atras
 
     def get_jugadas_posibles(self,dados, jugador):
         """
