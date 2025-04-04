@@ -184,6 +184,7 @@ class Tablero(object):
         :param jugador_enemigo: Jugador al que pertenece la ficha capturada.
         :param tablero: Estado actual del tablero.
         """
+
         #eliminar ficha comida o capturada
         tablero[posicion_comida][1] = 0
         tablero[posicion_comida][0] = ''
