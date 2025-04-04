@@ -1,6 +1,9 @@
 from random import seed, randrange, choice
 import pydoc
 
+#Edgar Lopez Herrera
+#Miguel Llorente Herrero
+
 AZAR = 75 # Semilla del generador de números aleatorios
 
 # … Otras constantes, funciones y clases …
@@ -19,7 +22,7 @@ class Tablero(object):
     def __repr__(self):
         """
         Funcion que retorna la representacion en un string, como un jugador humnano veria el tablero.
-        :return:
+        :return: String que contiene la representacion del tablero.
         """
         salida = ""
         altura_tablero = self.obtener_altura_tablero()
@@ -185,7 +188,7 @@ class Tablero(object):
             misma para todas las iteraciones de la funcion, por lo que se utiliza para que desde cualquier punto de
             ejecucion, la lista sea igualmente accesible.
         :return: Lista con las jugadas posibles en funcion de los parametros dados (Al pasarse por referencia este
-            return no es del todo necesario)
+            return no es totalmente necesario)
         """
         if jugada is None: jugada = []
         if jugadas is None: jugadas = []
@@ -209,7 +212,13 @@ class Tablero(object):
         return jugadas
 
     def realizar_copia_tablero(self,tablero = None):
-        if tablero == None:
+        """
+        Funcion encargada de devolver una copia del tablero pasado como parametro, este estara almacenado en
+            otro espacio de memoria el cual podra modificarse sin afectar al original.
+        :param tablero: Tablero, el cual se usara como origen para realizar la copia
+        :return: Tablero identico al pasado como parametro pero localizado en otro espacio de memoria.
+        """
+        if tablero is None:
             tablero = self.tablero
         return [[j for j in casilla] for casilla in tablero]
             
@@ -217,6 +226,14 @@ class Tablero(object):
 
 class Pargammon(object):
     def __init__(self, n=18, m=6, d=3, fichas=('\u263a', '\u263b')):
+        """
+        Inicializador de la partida PArgamon, recibe una seria de parametros para establecer las condiciones iniciales
+            de la partida.
+        :param n: Entero correspondiente al numero de columnas que tendra el tablero.
+        :param m: Entero correspondiente al numero de fichas que tendra cada jugador al comienzo de la partida.
+        :param d: Entero correspondiente al numero de dados con los que se jugaran.
+        :param fichas: Lista que contiene los caracteres de los jugadores de la partida.
+        """
         self.N = n # Número de columnas
         self.M = m # Número inicial de fichas
         self.D = d # Número de dados
@@ -229,12 +246,20 @@ class Pargammon(object):
 
 
     def __repr__(self) -> str:
+        """
+        Funcion que retorna la representacion en un string, como un jugador humnano veria el turno actual de la partida.
+        :return: String que contiene la representacion del turno actual de la partida.
+        """
         salida = f"JUGADA #{self.turno + 1}\n"
         salida += str(self.tablero) + "\n"
         salida += f"Turno de {self.obtener_jugador_actual()}: {self.imagen_dado()}"
         return salida
 
     def imagen_dado (self):
+        """
+        Funcion que retorna la representacion de la tirada de dados.
+        :return: String que contiene la representacion de los dados de la tirada actual.
+        """
         # devuelve el la cara de dado que haya salido
         simbolos_dados = ["⚀","⚁","⚂", "⚃", "⚄","⚅"] #https://es.piliapp.com/symbol/dice/
         resultado = ""
@@ -243,7 +268,10 @@ class Pargammon(object):
         return resultado
 
     def cambiar_turno(self) -> bool:
-        """ Cambia de turno. Devuelve True si es fin de partida, False si no """
+        """
+         Cambia de turno. Devuelve True si es fin de partida, False si no
+        :return: Booleano correspondiente a la verificacion de si se ha terminado la partida.
+        """
         # …
         self.turno += 1 #cambio turno
         # La tirada de dados se debe realizar con esta línea:
@@ -255,14 +283,24 @@ class Pargammon(object):
         return True #Devuelve un True cuando puede cambiar el turno, dejara de poder cambiar el turno al haberse terminado la partida
 
     def obtener_jugador_actual(self):
+        """
+        Funcion que retorna el caracter del jugador al que le toca jugar el turno.
+        :return: Char del jugador actual.
+        """
         return self.FICHAS[self.turno%len(self.FICHAS)]
 
     def jugar(self, txt_jugada: str) -> None | str:
+        """
+        Funcion encargada de realizar la jugada del turno correspondiente al jugador actual.
+            Comprueba si se puede realizar la jugada o no e intenta volver a pedir al usuario tantas
+            veces como sea necesario que el jugador inserte una jugada valida
+        :param txt_jugada: String correspondiente a la jugada que quiere realizar el jugador.
+        :return: Booleano correspondiente a si se ha podido realizar o no la jugada.
+        """
         jugada_realizada = False
         jugador_actual=self.obtener_jugador_actual()
 #Aqui se tiene que añadir una funcion que compruebe que el texto introducido es valido y que la cantidad de caracteres no supera las de los dados
 
-        #Esta funcion esta dando problemas, por ahora me centrare en hacer que funcione la realizacion de jugadas
         jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
         print(jugadas_posibles)
 
@@ -276,6 +314,10 @@ class Pargammon(object):
         # …
 
 def main():
+    """
+    Funcion principal encargada de ejecutar el pargamon y mantener la partida activa hasta que se termine.
+    :return: None
+    """
     seed(AZAR)
     pydoc.writedoc('practica1')
     print("*** PARGAMMON ***")
