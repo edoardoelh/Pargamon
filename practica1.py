@@ -96,7 +96,6 @@ class Tablero(object):
                         se especifique, usara el tablero perteneciente al objeto.
         :return: Boleano que especifica si se puede realizar la jugada consultada o no.
         """
-
         movimiento_posible = True
         if casilla != -1:
             if tablero is None:
@@ -152,8 +151,16 @@ class Tablero(object):
                 tablero = self.tablero
             if not self.comprobar_movimiento(casilla, movimiento, jugador, tablero):
                 movimiento_realizado = False
+            elif casilla + movimiento > len(tablero) + 1:#Supuestamente esto lo soluciona, hay que revisarlo
+                movimiento_realizado = False
             else:
-                if tablero[casilla + movimiento][0] != jugador and tablero[casilla + movimiento][1] == 1:
+                if casilla + movimiento == len(tablero) + 1:
+                    if tablero[casilla][1] > 1:
+                        tablero[casilla][1] -= 1
+                    else:
+                        tablero[casilla][1] = 0
+                        tablero[casilla][0] = ''
+                elif tablero[casilla + movimiento][0] != jugador and tablero[casilla + movimiento][1] == 1:#Aqui llega aun saliendose por mucho del tablero (hay que hacer debug)
                     tablero[casilla + movimiento][0] = jugador
 #FALTA: llamada a la funcion que hace que la casilla comida se mueva a donde le corresponda
                 else:
@@ -172,6 +179,7 @@ class Tablero(object):
         """
         #tablero_virtual = self.tablero.copy()
         jugadas_posibles:list = self.generador_jugadas(dados, jugador, self.tablero)
+        if len(jugadas_posibles) > 1: jugadas_posibles.pop(0)
         print("Jugadas posibles totales: [", *jugadas_posibles, "]", sep='\n')
         return jugadas_posibles
 
@@ -192,7 +200,7 @@ class Tablero(object):
         """
         if jugada is None: jugada = []
         if jugadas is None: jugadas = []
-        columnas_usables = self.obtener_indice_columnas_usables(jugador, tablero)
+        columnas_usables = [-1] + self.obtener_indice_columnas_usables(jugador, tablero)
         for columna in columnas_usables:#Realiza el movimiento por cada una de las columnas usables
             if self.comprobar_movimiento(columna, dados[0], jugador, tablero):#Comprueba si ese movimiento se puede realizar
                 copia_tablero = self.realizar_copia_tablero(tablero)
