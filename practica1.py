@@ -20,6 +20,7 @@ class Tablero(object):
         self.crear_tablero_vacio(num_columnas)
         self.añadir_jugadores(fichas, num_fichas)
 
+        
     def __repr__(self):
         """
         Funcion que retorna la representacion en un string, como un jugador humnano veria el tablero.
@@ -41,6 +42,7 @@ class Tablero(object):
 
         return salida
 
+      
     def obtener_altura_tablero(self):
         """
         Retorna un numero entero perteneciente a la cantidad de fichas de la columna con mayor numero de los mismas.
@@ -64,6 +66,7 @@ class Tablero(object):
             self.tablero[i][0] = fichas[i]
             self.tablero[i][1] = numero_fichas
 
+            
     def crear_tablero_vacio(self, numero_columnas):
         """
         Crea un tablero con tantas casillas como se le pasen por parametro
@@ -71,6 +74,7 @@ class Tablero(object):
         """
         self.tablero = [["",0] for i in range(numero_columnas)]
 
+        
     def obtener_indice_columnas_usables(self, jugador, tablero = None):
         """
         Retorna un array de indices de las casillas del tablero que pertenecen al jugador.
@@ -97,7 +101,6 @@ class Tablero(object):
                         se especifique, usara el tablero perteneciente al objeto.
         :return: Boleano que especifica si se puede realizar la jugada consultada o no.
         """
-
         movimiento_posible = True
         if casilla != -1:
             if tablero is None:
@@ -109,6 +112,7 @@ class Tablero(object):
                 if tablero[casilla + movimiento][0] != jugador and tablero[casilla + movimiento][1] > 1: movimiento_posible = False #El otro jugador tiene mas de una ficha en su columna
         return movimiento_posible
 
+      
     def comprobar_movimientos(self, casillas, movimientos, jugador, tablero=None):
         """
         Funcion que realiza la comprobacion de multiples movimientos, se toma el mismo indice de la lista casillas y
@@ -148,16 +152,14 @@ class Tablero(object):
         :return: Devuelve un Booleano correspondiente a si se ha podido realizar el movimiento.
         """
         movimiento_realizado = True
-        if casilla == -1:  # si la casilla es -1 es la @ no hay movimiento
-            return True
-
-        if tablero is None:
-            tablero = self.tablero
-
-        if not self.comprobar_movimiento(casilla, movimiento, jugador, tablero):
-            movimiento_realizado = False  # si el movimiento no es valido no se hace
-
-        else:
+        if casilla != -1:
+            if tablero is None:
+                tablero = self.tablero
+            if not self.comprobar_movimiento(casilla, movimiento, jugador, tablero):
+                movimiento_realizado = False # si el movimiento no es valido no se hace
+            elif casilla + movimiento > len(tablero) + 1:#Supuestamente esto lo soluciona, hay que revisarlo
+                movimiento_realizado = False
+            else:
             # verificar una unica ficha enemiga en esa casilla
             if tablero[casilla + movimiento][0] != jugador and tablero[casilla + movimiento][1] == 1:
                 jugador_enemigo = tablero[casilla + movimiento][0]
@@ -174,9 +176,9 @@ class Tablero(object):
 
             if tablero[casilla][1] == 0:
                 tablero[casilla][0] = ''  # si no hay fichas limpia casilla
-
-        return movimiento_realizado  # devuelve si se ha podido hacer el movimiento
-
+        return movimiento_realizado
+      
+      
     def cambiar_ficha_comida(self, posicion_comida, jugador_enemigo, tablero):
         """
         Mueve la ficha capturada a la primera columna válida ANTERIOR (vacía o con fichas del mismo jugador).
@@ -205,6 +207,7 @@ class Tablero(object):
                 ficha_colocada = True  #se coloco la ficha
             i -= 1  #una columna mas pa atras
 
+            
     def get_jugadas_posibles(self,dados, jugador):
         """
         Funcion encargada de preparar y llamar a la funcion que genera un listado de jugadas posibles.
@@ -214,9 +217,11 @@ class Tablero(object):
         """
         #tablero_virtual = self.tablero.copy()
         jugadas_posibles:list = self.generador_jugadas(dados, jugador, self.tablero)
+        if len(jugadas_posibles) > 1: jugadas_posibles.pop(0)
         print("Jugadas posibles totales: [", *jugadas_posibles, "]", sep='\n')
         return jugadas_posibles
 
+      
     def generador_jugadas(self, dados, jugador, tablero, jugada = None, jugadas = None):
         """
         Funcion encargada de generar jugadas individualmente y de manera recursivo para posteriormente asociarlas
@@ -234,7 +239,7 @@ class Tablero(object):
         """
         if jugada is None: jugada = []
         if jugadas is None: jugadas = []
-        columnas_usables = self.obtener_indice_columnas_usables(jugador, tablero)
+        columnas_usables = [-1] + self.obtener_indice_columnas_usables(jugador, tablero)
         for columna in columnas_usables:#Realiza el movimiento por cada una de las columnas usables
             if self.comprobar_movimiento(columna, dados[0], jugador, tablero):#Comprueba si ese movimiento se puede realizar
                 copia_tablero = self.realizar_copia_tablero(tablero)
@@ -253,6 +258,7 @@ class Tablero(object):
                 jugada.append(-1)
         return jugadas
 
+      
     def realizar_copia_tablero(self,tablero = None):
         """
         Funcion encargada de devolver una copia del tablero pasado como parametro, este estara almacenado en
@@ -297,6 +303,7 @@ class Pargammon(object):
         salida += f"Turno de {self.obtener_jugador_actual()}: {self.imagen_dado()}"
         return salida
 
+      
     def imagen_dado (self):
         """
         Funcion que retorna la representacion de la tirada de dados.
@@ -309,6 +316,7 @@ class Pargammon(object):
             resultado += simbolos_dados[cara_dado - 1] + " "
         return resultado
 
+      
     def cambiar_turno(self) -> bool:
         """
          Cambia de turno. Devuelve True si es fin de partida, False si no
@@ -324,6 +332,7 @@ class Pargammon(object):
 
         return True #Devuelve un True cuando puede cambiar el turno, dejara de poder cambiar el turno al haberse terminado la partida
 
+      
     def obtener_jugador_actual(self):
         """
         Funcion que retorna el caracter del jugador al que le toca jugar el turno.
@@ -331,6 +340,7 @@ class Pargammon(object):
         """
         return self.FICHAS[self.turno%len(self.FICHAS)]
 
+      
     def jugar(self, txt_jugada: str) -> None | str:
         """
         Funcion encargada de realizar la jugada del turno correspondiente al jugador actual.
@@ -355,6 +365,7 @@ class Pargammon(object):
                 txt_jugada = input("Jugada: ")
         # …
 
+        
 def main():
     """
     Funcion principal encargada de ejecutar el pargamon y mantener la partida activa hasta que se termine.
@@ -367,7 +378,6 @@ def main():
     juego = Pargammon(*params)
     while juego.cambiar_turno():
         juego.jugar(input("Jugada: "))
-
 
 
 if __name__=="__main__":
