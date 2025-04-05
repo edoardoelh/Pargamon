@@ -301,6 +301,171 @@ class Pargammon(object):
         salida += f"Turno de {self.obtener_jugador_actual()}: {self.imagen_dado()}"
         return salida
 
+    ######
+    ######
+    ######
+    ######
+    ######
+    ######
+
+    def calcular_puntuacion_jugador(self, jugador, tablero=None, fichas_sacadas=None):
+        """
+        calcula puntuacion jugada por fichas y posiciones
+        :param jugador: caracter indentifica jugador
+        :param tablero: Estado actual del tablero
+        :param fichas_sacadas: diccionario con las fichas sacadas
+        :return: Puntuación numerica
+        """
+
+        if tablero is None:
+            tablero = self.tablero.tablero  #copia tablero
+        if fichas_sacadas is None:
+            fichas_sacadas = self.tablero.fichas_sacadas  #copia fichas sacadas
+
+        N = len(tablero)  #numero total de columnas
+        M = self.M  #numero inicial de fichas por jugador
+        copia_fichas_sacadas = fichas_sacadas.get(jugador, 0)  #fichas sacadas por este jugador
+
+
+        puntos = 3 * (N + 1) * copia_fichas_sacadas #puntos base(3) por fichas sacadas
+
+        #calcula puntos por fichas en el tablero
+        for c in range(N):
+            if tablero[c][0] == jugador:  #si columna es del jugador
+                I_c = c + 1  #indice 1-based (A=1, B=2,...)
+                N_c = tablero[c][1]  #cantidad de fichas en esta columna
+                A_c = 2 if N_c > 1 else 1  #factor de apilamiento (2 o mas fichas = hay apilamiento)
+
+                puntos += A_c * I_c * N_c #suma de los puntos
+
+        return puntos  #puntuacion total
+
+    def calcular_valor_jugada(self, jugada, jugador_actual):
+        """
+        Evalua una jugada calculando su valor estrategico, porque??? no basta con saber cuanto ganas tu,
+        sino cuánto pierde el rival esto evita que la máquina elija jugadas que:
+                te dan puntos, pero dan mas al rival
+                no bloquean al rival cuando está por ganar
+        :param jugada: lista de movimientos a evaluar
+        :param jugador_actual: jugador que realiza la jugada
+        :return: valor numeico de la jugada (mayor = mejor)
+        """
+        # Prepara copias para simular la jugada sin afectar el estado real
+        tablero_simulado = self.tablero.realizar_copia_tablero()  #copia tablero
+        fichas_sacadas_simulado = self.tablero.fichas_sacadas.copy()  #copia fichas tablero sacadas
+
+        #simulacion cada movimiento
+        for i in range(len(jugada)):
+            if jugada[i] != -1:  #no es un movimiento nulo @
+                # Aplica el movimiento en la simulación
+                self.tablero.realizar_movimiento(
+                    jugada[i],  #indice columns
+                    self.dados[i],  #valor dado de esa columna
+                    jugador_actual,  #jugador activo
+                    tablero_simulado,  #copia tablero
+                    fichas_sacadas_simulado  #copia fichas tablero sacadas
+                )
+
+        #calculo puntuación jugadores
+        puntuaciones = {}
+        for jugador in self.FICHAS:
+            puntuaciones[jugador] = self.calcular_puntuacion_jugador(
+                jugador,
+                tablero_simulado,
+                fichas_sacadas_simulado
+            )
+
+        #formula pag 8 sum(2*puntos_jugador - suma_puntos_rivales)
+        p_j = puntuaciones[jugador_actual]  #puntos del jugador actual
+
+
+        sum_p_k = 0  #suma puntos de todos los oponentes
+
+        for jugador in puntuaciones:    #jugador y puntos
+
+            if jugador != jugador_actual:   #si jugador actual
+                sum_p_k += puntuaciones[jugador]  #sumar sus puntos
+
+        return 2 * p_j - sum_p_k  #valor final jugada
+
+    def obtener_jugadas_ordenadas(self, jugador):
+        """
+        Genera y ordena todas las jugadas posibles por su valor
+        :param jugador: jugador actual
+        :return: lista de jugadas ordenadas de mejor a peor (mayor a menor puntuacion)
+        """
+
+        jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador)
+
+
+        jugadas_con_valor = []  #guadar jugada y valor
+        for jugada in jugadas_posibles:
+            valor = self.calcular_valor_jugada(jugada, jugador)
+            jugadas_con_valor.append((jugada, valor))  #una tupla de jugada y valor
+
+        #ordenar mayor a menor
+        for i in range(len(jugadas_con_valor)):
+            for j in range(i + 1, len(jugadas_con_valor)):
+                if jugadas_con_valor[i][1] < jugadas_con_valor[j][1]:
+                    #intercambia las jugadas si están en el orden incorrectoº
+                    jugadas_con_valor[i], jugadas_con_valor[j] = jugadas_con_valor[j], jugadas_con_valor[i]
+
+        jugadas_ordenadas = jugadas_con_valor
+
+        #extrae las jugadas sin los valores y las devuelve
+        return [jugada for jugada, valor in jugadas_ordenadas]
+
+    def jugada_maquina_lista(self):
+        """
+        Selecciona automáticamente la mejor jugada para la máquina 'lista'
+        :return: String con la jugada en formato texto (ej. "AB@C")
+        """
+        jugador_actual = self.obtener_jugador_actual()
+
+        #jugadas ordenadas por puntuaje
+        jugadas_ordenadas = self.obtener_jugadas_ordenadas(jugador_actual)
+
+        jugada_texto = "@" * self.D  #valor por defecto si no hay jugadas posibles con esos dados, movimiento nulo
+
+        if len(jugadas_ordenadas) > 0:
+            mejor_jugada = jugadas_ordenadas[0]
+            jugada_texto = []
+            for movimiento in mejor_jugada:
+                if movimiento == -1:
+                    jugada_texto.append('@')
+                else:
+                    jugada_texto.append(chr(65 + movimiento))
+            jugada_texto = ''.join(jugada_texto)
+
+        return jugada_texto
+
+    def jugada_maquina_tonta(self):
+        """
+        Selecciona una jugada válida aleatoria para la máquina 'tonta'
+        Devuelve la jugada en formato texto (ej. "AB@") o movimiento nulo si no hay jugadas válidas
+        """
+        jugador_actual = self.obtener_jugador_actual()
+        jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
+
+        jugada_texto = "@" * self.D  #valor por defecto si no hay jugadas posibles con esos dados, movimiento nulo
+
+        if len(jugadas_posibles) > 0:  #al menos 1 jugada
+            jugada_elegida = choice(jugadas_posibles)
+            jugada_texto = "".join(
+                "@" if mov == -1 else chr(65 + mov)
+                for mov in jugada_elegida
+            )
+        #else se mantiene el valor por defecto, jugada sin movimiento @*numdados
+
+        return jugada_texto
+
+    ######
+    ######
+    ######
+    ######
+    ######
+    ######
+
       
     def imagen_dado (self):
         """
