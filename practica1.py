@@ -511,11 +511,6 @@ class Pargammon(object):
         return self.FICHAS[self.turno%len(self.FICHAS)]
 
 
-    #|||||
-    # |||||
-    # |||||
-    # |||||
-    # |||||
     def configurar_jugadores(self):
         """
         Configura el tipo de cada jugador (Humano/Máquina Tonta/Máquina Lista)
@@ -561,14 +556,6 @@ class Pargammon(object):
         return jugada
 
 
-
-    #|||||
-    # |||||
-    # |||||
-    # |||||
-    # |||||
-
-      
     def jugar(self, txt_jugada: str) -> None | str:
         """
         Función encargada de realizar la jugada del turno correspondiente al jugador actual.
@@ -584,7 +571,7 @@ class Pargammon(object):
 #Aqui se tiene que añadir una funcion que compruebe que el texto introducido es válido y que la cantidad de caracteres no supera las de los dados
         if tipo_jugador in ('T', 'L') and txt_jugada is None:
             txt_jugada = self.obtener_jugada_automatica()
-            print(f"Jugada automática: {txt_jugada}")
+            print(f"Jugada: {txt_jugada}")
         #jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
         #print(jugadas_posibles)
 
