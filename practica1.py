@@ -9,13 +9,14 @@ AZAR = 75 # Semilla del generador de números aleatorios
 
 # … Otras constantes, funciones y clases …
 class Tablero(object):
-    def __init__(self, num_columnas, num_fichas, fichas):
+    def __init__(self, pargamon, num_columnas, num_fichas, fichas):
         """
         Constructor del tablero, añade las columnas especificadas y las fichas de cada jugador.
         :param num_columnas: Entero con el número de columnas a insertar en el tablero.
         :param num_fichas: Entero con el número de fichas a incluir a cada jugador.
         :param fichas: Lista con los caracteres de los jugadores que se incluirán en el tablero
         """
+        self.pargamon = pargamon
         self.tablero = []
         self.fichas_sacadas = {i:0 for i in fichas}
         self.crear_tablero_vacio(num_columnas)
@@ -130,14 +131,16 @@ class Tablero(object):
             tablero = self.realizar_copia_tablero()
         movimientos_posibles = True
         tablero_virtual = self.realizar_copia_tablero(tablero)
+
         for i in range(len(movimientos)):
             if movimientos_posibles:
-                #print(self.comprobar_movimiento(casillas[i], movimientos[i], jugador, tablero_virtual))  #BORRAR POSTERIORMENTE
                 if self.comprobar_movimiento(casillas[i], movimientos[i], jugador, tablero_virtual):
                     self.realizar_movimiento(casillas[i], movimientos[i], jugador, tablero_virtual)
                 else:
                     movimientos_posibles = False
-        #print(tablero_virtual) #BORRAR POSTERIORMENTE
+        if not casillas in self.get_jugadas_posibles(movimientos,jugador) and movimientos_posibles == True:
+            movimientos_posibles = False
+            print("Esta jugada no se puede realizar todo @@@")
         return movimientos_posibles
 
 
@@ -285,7 +288,7 @@ class Pargammon(object):
         self.D = d # Número de dados
         self.J = len(fichas) # Numero de jugadores
         self.FICHAS = fichas # Caracteres de las fichas de cada jugador
-        self.tablero = Tablero(self.N, self.M, self.FICHAS)
+        self.tablero = Tablero(self, self.N, self.M, self.FICHAS)
         self.turno = -1 # Para el wey que le toca tirar
         self.dados = [] #Para guardar la última tirada de dados y esta luego ponerla en un array con todas las tiradas de la partida
         self.historial_dados = []
@@ -466,7 +469,10 @@ class Pargammon(object):
     ######
     ######
 
-      
+    def get_numero_jugador(self, jugador):
+        return self.FICHAS.index(jugador) + 1
+
+
     def imagen_dado (self):
         """
         Función que retorna la representación de la tirada de dados.
@@ -520,7 +526,8 @@ class Pargammon(object):
         #print(jugadas_posibles)
 
         while not jugada_realizada:
-            movimientos: list = [ord(c.lower()) - ord('a') for c in txt_jugada]
+            movimientos: list = [-1 if ord(c.lower()) - ord('a') == -33 else ord(c.lower()) - ord('a') for c in txt_jugada]
+
             if self.tablero.comprobar_movimientos(movimientos, self.dados, jugador_actual):
                 for i in range(len(movimientos)):
                     jugada_realizada = self.tablero.realizar_movimiento(movimientos[i], self.dados[i], jugador_actual)
