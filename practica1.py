@@ -270,7 +270,7 @@ class Tablero(object):
         if tablero is None:
             tablero = self.tablero
         return [[j for j in casilla] for casilla in tablero]
-
+            
 
 
 class Pargammon(object):
@@ -292,7 +292,7 @@ class Pargammon(object):
         self.turno = -1 # Para el wey que le toca tirar
         self.dados = [] #Para guardar la última tirada de dados y esta luego ponerla en un array con todas las tiradas de la partida
         self.historial_dados = []
-        self.tipos_jugadores = []
+        self.tipos_jugadores= []
 
 
     def __repr__(self) -> str:
@@ -510,27 +510,27 @@ class Pargammon(object):
         """
         return self.FICHAS[self.turno%len(self.FICHAS)]
 
-        # |||||
-        # |||||
-        # |||||
-        # |||||
-        # |||||
 
+    #|||||
+    # |||||
+    # |||||
+    # |||||
+    # |||||
     def configurar_jugadores(self):
         """
         Configura el tipo de cada jugador (Humano/Máquina Tonta/Máquina Lista)
-        :return: lista de tipos de jugador (['H', 'T'], ['L', 'H'], etc.)
+        :return: Lista de tipos de jugador (['H', 'T'], ['L', 'H'], etc.)
         """
         tipos_validos = {'H', 'T', 'L'}
         tipos_jugadores = []
 
         for ficha in self.FICHAS:
-            tipo = self.pedir_tipo_jugadores(ficha, tipos_validos)
+            tipo = self.pedir_tipo_jugador(ficha, tipos_validos)
             tipos_jugadores.append(tipo)
 
         return tipos_jugadores
 
-    def pedir_tipo_jugadores(self, ficha, tipos_validos):
+    def pedir_tipo_jugador(self, ficha, tipos_validos):
         """
         Pide y valida el tipo de jugador
         :param ficha: simbolo del jugador
@@ -560,13 +560,15 @@ class Pargammon(object):
 
         return jugada
 
-    # |||||
+
+
+    #|||||
     # |||||
     # |||||
     # |||||
     # |||||
 
-
+      
     def jugar(self, txt_jugada: str) -> None | str:
         """
         Función encargada de realizar la jugada del turno correspondiente al jugador actual.
