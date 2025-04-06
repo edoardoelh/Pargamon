@@ -289,7 +289,10 @@ class Pargammon(object):
         self.turno = -1 # Para el wey que le toca tirar
         self.dados = [] #Para guardar la última tirada de dados y esta luego ponerla en un array con todas las tiradas de la partida
         self.historial_dados = []
+        self.historial_tableros = []
+        self.historial_fichas_sacadas = []
         self.tipos_jugadores = self.pedir_tipo_jugadores()
+        self.estado_turno = 0 #0: turno normal, 1:turno retrocedido, 2: jugada invalida
 
 
     def __repr__(self) -> str:
@@ -478,10 +481,20 @@ class Pargammon(object):
         :return: Booleano correspondiente a la verificación de si se ha terminado la partida.
         """
         continua_partida = True
-        self.turno += 1 #cambio turno
-        # La tirada de dados se debe realizar con esta línea:
-        self.dados = [randrange(6) + 1 for _ in range(self.D)]
-        self.historial_dados += [self.dados[:]]
+        if self.estado_turno == 0:
+            self.turno += 1 #cambio turno
+            # La tirada de dados se debe realizar con esta línea:
+            self.dados = [randrange(6) + 1 for _ in range(self.D)]
+            self.historial_dados += [self.dados[:]]
+            self.historial_tableros += [self.tablero.realizar_copia_tablero()[:]]
+            self.historial_fichas_sacadas.append(self.tablero.fichas_sacadas.copy())
+
+        elif self.estado_turno == 1:
+            self.dados = self.historial_dados[-1]
+            self.tablero.tablero = self.historial_tableros[-1]
+            self.tablero.fichas_sacadas = self.historial_fichas_sacadas[-1]
+            self.estado_turno = 0
+
         print(self)
 
         for i in range(len(self.tablero.fichas_sacadas)):
@@ -551,18 +564,25 @@ class Pargammon(object):
             print(f"Jugada: {txt_jugada}")
         else:
             txt_jugada = input("Jugada: ")
-        jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
-        print(jugadas_posibles)
+        #jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
+        #print(jugadas_posibles)
 
-        while not jugada_realizada:
-            movimientos: list = [-1 if ord(c.lower()) - ord('a') == -33 else ord(c.lower()) - ord('a') for c in txt_jugada]
+        if txt_jugada[0] == "*":
+            for i in range(len(txt_jugada)):
+                self.historial_tableros.pop()
+                self.historial_fichas_sacadas.pop()
+                self.historial_dados.pop()
+                self.turno -= 1
+                self.estado_turno = 1
+        else:
+            while not jugada_realizada:
+                movimientos: list = [-1 if ord(c.lower()) - ord('a') == -33 else ord(c.lower()) - ord('a') for c in txt_jugada]
 
-            if self.tablero.comprobar_movimientos(movimientos, self.dados, jugador_actual):
-                for i in range(len(movimientos)):
-                    jugada_realizada = self.tablero.realizar_movimiento(movimientos[i], self.dados[i], jugador_actual)
-            else:
-                txt_jugada = input("Jugada: ")
-        # …
+                if self.tablero.comprobar_movimientos(movimientos, self.dados, jugador_actual):
+                    for i in range(len(movimientos)):
+                        jugada_realizada = self.tablero.realizar_movimiento(movimientos[i], self.dados[i], jugador_actual)
+                else:
+                    txt_jugada = input("Jugada: ")
 
         
 def main():
