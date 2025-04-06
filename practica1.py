@@ -7,7 +7,7 @@ import pydoc
 
 AZAR = 75 # Semilla del generador de números aleatorios
 
-# … Otras constantes, funciones y clases …
+
 class Tablero(object):
     def __init__(self, pargamon, num_columnas, num_fichas, fichas):
         """
@@ -94,12 +94,12 @@ class Tablero(object):
 
     def comprobar_movimiento(self, casilla, movimiento, jugador, tablero = None):
         """
-        Retorna un valor booleano correspondiente a si se puede realizar el moviminto solicitado.
+        Retorna un valor booleano correspondiente a si se puede realizar el movimiento solicitado.
         :param casilla: Casilla que contiene la ficha del jugador a mover (De no tratarse de una ficha
             del jugador la función devuelve False).
         :param movimiento: Entero que determina la distancia a moverse por el jugador.
         :param jugador: Carácter de la ficha del jugador a comprobar.
-        :param tablero: (tablero, optional) Tablero en el que realizara la comprobacion, en el caso de que no
+        :param tablero: (tablero, optional) Tablero en el que realizara la comprobación, en el caso de que no
                         se especifique, usara el tablero perteneciente al objeto.
         :return: Booleano que especifica si se puede realizar la jugada consultada o no.
         """
@@ -107,11 +107,27 @@ class Tablero(object):
         if casilla != -1:
             if tablero is None:
                 tablero = self.tablero
-            if casilla + movimiento > len(tablero):
+            if casilla > len(tablero):
+                movimiento_posible = False  # el intento de movimiento se pasa del maximo del tablero
+                self.pargamon.codigo_mensaje_error = 1
+                self.pargamon.columnas_error.append(casilla)
+            elif casilla + movimiento > len(tablero):
                 movimiento_posible = False #el intento de movimiento se pasa del maximo del tablero
-            if casilla + movimiento < len(tablero):
-                if tablero[casilla][0] != jugador: movimiento_posible = False #La casilla pertenece a otro jugador
-                if tablero[casilla + movimiento][0] != jugador and tablero[casilla + movimiento][1] > 1: movimiento_posible = False #El otro jugador tiene mas de una ficha en su columna
+                if self.pargamon.codigo_mensaje_error == 0:
+                    self.pargamon.codigo_mensaje_error = 3
+                    self.pargamon.columnas_error.append(casilla)
+                    self.pargamon.columnas_error.append(casilla + movimiento)
+            elif casilla + movimiento < len(tablero):
+                if tablero[casilla][0] != jugador:
+                    movimiento_posible = False #La casilla pertenece a otro jugador
+                    self.pargamon.codigo_mensaje_error = 2
+                    self.pargamon.columnas_error.append(casilla)
+                if tablero[casilla + movimiento][0] != jugador and tablero[casilla + movimiento][1] > 1:
+                    movimiento_posible = False #El otro jugador tiene mas de una ficha en su columna
+                    if self.pargamon.codigo_mensaje_error == 0:
+                        self.pargamon.codigo_mensaje_error = 4
+                        self.pargamon.columnas_error.append(casilla)
+                        self.pargamon.columnas_error.append(casilla + movimiento)
         return movimiento_posible
 
       
@@ -133,7 +149,11 @@ class Tablero(object):
         tablero_virtual = self.realizar_copia_tablero(tablero)
 
         for i in range(len(movimientos)):
-            if movimientos_posibles:
+            if casillas[i] > len(tablero)-1:
+                if self.pargamon.codigo_mensaje_error != 1: self.pargamon.columnas_error = []
+                self.pargamon.codigo_mensaje_error = 1
+                self.pargamon.columnas_error.append(casillas[i])
+            elif movimientos_posibles:
                 if self.comprobar_movimiento(casillas[i], movimientos[i], jugador, tablero_virtual):
                     self.realizar_movimiento(casillas[i], movimientos[i], jugador, tablero_virtual)
                 else:
@@ -165,7 +185,7 @@ class Tablero(object):
                 fichas_sacadas = self.fichas_sacadas
             if not self.comprobar_movimiento(casilla, movimiento, jugador, tablero):
                 movimiento_realizado = False # si el movimiento no es valido no se hace
-            elif casilla + movimiento > len(tablero):#Supuestamente esto lo soluciona, hay que revisarlo
+            elif casilla + movimiento > len(tablero):
                 movimiento_realizado = False
             else:
                 if casilla + movimiento == len(tablero):#La ficha ha llegado a la meto
@@ -218,7 +238,6 @@ class Tablero(object):
         """
         jugadas_posibles:list = self.generador_jugadas(dados, jugador, self.tablero, self.fichas_sacadas)
         if len(jugadas_posibles) > 1: jugadas_posibles.pop(0)
-##print("Jugadas posibles totales: [", *jugadas_posibles, "]", sep='\n')
         return jugadas_posibles
 
       
@@ -251,7 +270,6 @@ class Tablero(object):
                 if len(copia_dados) >= 1:
                     self.generador_jugadas(copia_dados, jugador, copia_tablero, copia_fichas_sacadas, jugada, jugadas)
                 else:
-                    #Aquí se tiene que añadir a la parte final de la jugada el valor de la misma para hacer luego la ordenación (array.sort(key=lambda L: L[1]), https://www.reddit.com/r/learnpython/comments/loex48/how_to_sort_by_the_second_element_in_a_2d_list/)
                     jugadas.append(jugada.copy())
                 jugada.pop()
         return jugadas
@@ -293,6 +311,8 @@ class Pargammon(object):
         self.historial_fichas_sacadas = []
         self.tipos_jugadores = self.pedir_tipo_jugadores()
         self.estado_turno = 0 #0: turno normal, 1:turno retrocedido, 2: jugada invalida
+        self.codigo_mensaje_error = 0
+        self.columnas_error = []
 
 
     def __repr__(self) -> str:
@@ -488,17 +508,22 @@ class Pargammon(object):
             self.historial_dados += [self.dados[:]]
             self.historial_tableros += [self.tablero.realizar_copia_tablero()[:]]
             self.historial_fichas_sacadas.append(self.tablero.fichas_sacadas.copy())
-
+            print(self)
         elif self.estado_turno == 1:
             self.dados = self.historial_dados[-1]
             self.tablero.tablero = self.historial_tableros[-1]
             self.tablero.fichas_sacadas = self.historial_fichas_sacadas[-1]
             self.estado_turno = 0
+            print(self)
+        elif self.estado_turno == 2:
+            self.estado_turno = 0
 
-        print(self)
+        self.columnas_error = []
+        self.codigo_mensaje_error = 0
+
 
         for i in range(len(self.tablero.fichas_sacadas)):
-            if list(self.tablero.fichas_sacadas.items())[i][1] == self.M and continua_partida == True:
+            if list(self.tablero.fichas_sacadas.items())[i][1] / 2 == self.M and continua_partida == True:
                 continua_partida = False
                 print(f"Han ganado los {self.FICHAS[i]}!")
 
@@ -554,18 +579,18 @@ class Pargammon(object):
         :param txt_jugada: String correspondiente a la jugada que quiere realizar el jugador.
         :return: Booleano correspondiente a si se ha podido realizar o no la jugada.
         """
+        mensaje_error = ""
         jugada_realizada = False
         jugador_actual=self.obtener_jugador_actual()
         jugador_idx = self.FICHAS.index(jugador_actual)
         tipo_jugador = self.tipos_jugadores[jugador_idx]
+        numero_jugador = self.get_numero_jugador(self.obtener_jugador_actual())
 
         if tipo_jugador in ('T', 'L'):
             txt_jugada = self.obtener_jugada_automatica()
             print(f"Jugada: {txt_jugada}")
         else:
             txt_jugada = input("Jugada: ")
-        #jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
-        #print(jugadas_posibles)
 
         if txt_jugada[0] == "*":
             for i in range(len(txt_jugada)):
@@ -576,13 +601,28 @@ class Pargammon(object):
                 self.estado_turno = 1
         else:
             while not jugada_realizada:
-                movimientos: list = [-1 if ord(c.lower()) - ord('a') == -33 else ord(c.lower()) - ord('a') for c in txt_jugada]
-
-                if self.tablero.comprobar_movimientos(movimientos, self.dados, jugador_actual):
-                    for i in range(len(movimientos)):
-                        jugada_realizada = self.tablero.realizar_movimiento(movimientos[i], self.dados[i], jugador_actual)
-                else:
+                if len(txt_jugada) != len(self.dados):
+                    print(f"ERROR J{numero_jugador}: Debe indicar exactamente {len(self.dados)} movimientos.")
                     txt_jugada = input("Jugada: ")
+                else:
+                    movimientos: list = [-1 if ord(c.lower()) - ord('a') == -33 else ord(c.lower()) - ord('a') for c in txt_jugada]
+
+                    if self.tablero.comprobar_movimientos(movimientos, self.dados, jugador_actual):
+                        for i in range(len(movimientos)):
+                            jugada_realizada = self.tablero.realizar_movimiento(movimientos[i], self.dados[i], jugador_actual)
+                    else:
+                        jugada_realizada = True
+                        self.estado_turno = 2
+                        letras_columnas_error = [chr(65 + num) for num in self.columnas_error]
+                        if self.codigo_mensaje_error == 1:
+                            mensaje_error += f"ERROR J{numero_jugador}-M1: No existen columna(s) con estas letras: {', '.join(letras_columnas_error)}.\n"
+                        if self.codigo_mensaje_error == 2:
+                            mensaje_error += f"ERROR J{numero_jugador}-M2: Columna de origen {', '.join(letras_columnas_error)} no tiene fichas del jugador.\n"
+                        if self.codigo_mensaje_error == 3:
+                            mensaje_error += f"ERROR J{numero_jugador}-M3: Movimiento {letras_columnas_error[0]} -> {letras_columnas_error[1]}, columna destino fuera de rango.\n"
+                        if self.codigo_mensaje_error == 4:
+                            mensaje_error += f"ERROR J{numero_jugador}-M4: Movimiento {letras_columnas_error[0]} -> {letras_columnas_error[1]}, columna destino tiene más de una ficha contraria.\n"
+        return mensaje_error
 
         
 def main():
@@ -596,7 +636,9 @@ def main():
     params = map(int, input("Numero de columnas, fichas y dados = ").split())
     juego = Pargammon(*params)
     while juego.cambiar_turno():
-        print(juego.jugar(""))#Se ha decidido no utilizar este parametro, puesto que da problemas cuando la máquina es automática
+        print(juego.jugar(""), end="")
+        #Se ha decidido no utilizar el parametro de entrada de jugar,
+        # puesto que da problemas cuando la máquina es automática
 
 
 if __name__=="__main__":
