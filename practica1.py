@@ -153,6 +153,8 @@ class Tablero(object):
             la ficha.
         :param jugador: Carácter del jugador en el que se van a realizar los movimientos.
         :param tablero: (Tablero, opcional)Tablero en el que se quiere realizar el movimiento.
+        :param fichas_sacadas: (Colección, opcional) Colección encargada de almacenar las fichas que han
+            salido del tablero.
         :return: Devuelve un Booleano correspondiente a si se ha podido realizar el movimiento.
         """
         movimiento_realizado = True
@@ -249,7 +251,7 @@ class Tablero(object):
                 if len(copia_dados) >= 1:
                     self.generador_jugadas(copia_dados, jugador, copia_tablero, copia_fichas_sacadas, jugada, jugadas)
                 else:
-                    #Aqui se tiene que añadir a la parte final de la jugada el valor de la misma para hacer luego la ordenacion (array.sort(key=lambda L: L[1]), https://www.reddit.com/r/learnpython/comments/loex48/how_to_sort_by_the_second_element_in_a_2d_list/)
+                    #Aquí se tiene que añadir a la parte final de la jugada el valor de la misma para hacer luego la ordenación (array.sort(key=lambda L: L[1]), https://www.reddit.com/r/learnpython/comments/loex48/how_to_sort_by_the_second_element_in_a_2d_list/)
                     jugadas.append(jugada.copy())
                 jugada.pop()
                 copia_tablero = self.realizar_copia_tablero(tablero)
@@ -292,7 +294,7 @@ class Pargammon(object):
         self.turno = -1 # Para el wey que le toca tirar
         self.dados = [] #Para guardar la última tirada de dados y esta luego ponerla en un array con todas las tiradas de la partida
         self.historial_dados = []
-        self.tipos_jugadores= []
+        self.tipos_jugadores = self.pedir_tipo_jugadores()
 
 
     def __repr__(self) -> str:
@@ -305,12 +307,6 @@ class Pargammon(object):
         salida += f"Turno de {self.obtener_jugador_actual()}: {self.imagen_dado()}"
         return salida
 
-    ######
-    ######
-    ######
-    ######
-    ######
-    ######
 
     def calcular_puntuacion_jugador(self, jugador, tablero=None, fichas_sacadas=None):
         """
@@ -463,12 +459,6 @@ class Pargammon(object):
 
         return jugada_texto
 
-    ######
-    ######
-    ######
-    ######
-    ######
-    ######
 
     def get_numero_jugador(self, jugador):
         return self.FICHAS.index(jugador) + 1
@@ -492,15 +482,19 @@ class Pargammon(object):
          Cambia de turno. Devuelve True si es fin de partida, False si no
         :return: Booleano correspondiente a la verificación de si se ha terminado la partida.
         """
-        # …
+        continua_partida = True
         self.turno += 1 #cambio turno
         # La tirada de dados se debe realizar con esta línea:
-        self.dados = [randrange(6) + 1 for _ in range(self.D)] #estas dos lineas de los dados podriamos hacerlo en una funcion pequeñas, como veas
+        self.dados = [randrange(6) + 1 for _ in range(self.D)]
         self.historial_dados += [self.dados[:]]
         print(self)
-        #Aqui se tiene que añadir una concicion que compruebe si se ha terminado la partida, en ese caso retorna un False
 
-        return True #Devuelve un True cuando puede cambiar el turno, dejara de poder cambiar el turno al haberse terminado la partida
+        for i in range(len(self.tablero.fichas_sacadas)):
+            if list(self.tablero.fichas_sacadas.items())[i] == self.M and continua_partida == True:
+                continua_partida = False
+                print(f"Han ganado los {self.FICHAS[i]}!")
+
+        return continua_partida #Devuelve un True cuando puede cambiar el turno, dejara de poder cambiar el turno al haberse terminado la partida
 
       
     def obtener_jugador_actual(self):
@@ -511,43 +505,31 @@ class Pargammon(object):
         return self.FICHAS[self.turno%len(self.FICHAS)]
 
 
-    def configurar_jugadores(self):
+    def pedir_tipo_jugadores(self):
         """
-        Configura el tipo de cada jugador (Humano/Máquina Tonta/Máquina Lista)
-        :return: Lista de tipos de jugador (['H', 'T'], ['L', 'H'], etc.)
+        Pide y valida los tipos de jugadores en función de los jugadores que jueguen.
+        :return: Lista con el tipo de jugadores(H/T/L)
         """
-        tipos_validos = {'H', 'T', 'L'}
-        tipos_jugadores = []
-
+        tipos = []
         for ficha in self.FICHAS:
-            tipo = self.pedir_tipo_jugador(ficha, tipos_validos)
-            tipos_jugadores.append(tipo)
+            entrada_valida = False
+            while not entrada_valida:
+                entrada = input(f"Jugador {ficha} es [H]umano, Máquina [T]onta o Máquina [L]ista: ").upper()
+                if entrada in ["H","T","L"]:
+                    tipos.append(entrada)
+                    entrada_valida = True
+                else:
+                    print("Error: Ingrese H, T o L")
+        return tipos
 
-        return tipos_jugadores
-
-    def pedir_tipo_jugador(self, ficha, tipos_validos):
-        """
-        Pide y valida el tipo de jugador
-        :param ficha: simbolo del jugador
-        :param tipos_validos:
-        :return: tipo de jugador(H/T/L)
-        """
-        tipo = ""
-        while tipo not in tipos_validos:
-            entrada = input(f"Jugador {ficha} es [H]umano, Máquina [T]onta o Máquina [L]ista: ").upper()
-            if entrada in tipos_validos:
-                tipo = entrada
-            else:
-                print("Error: Ingrese H, T o L")
-        return tipo
-
-    def obtener_jugada_automatica(self, tipo_jugador):
+    def obtener_jugada_automatica(self):
         """
         Obtiene jugada automatica según el tipo de jugador
         :param tipo_jugador: H/T/L
-        :return: jugada en formato texto o cadena vacia si no es maquina
+        :return: jugada en formato texto o cadena vacia si no es máquina
         """
         jugada = ""
+        tipo_jugador = self.tipos_jugadores[self.FICHAS.index(self.obtener_jugador_actual())]
         if tipo_jugador == 'T':
             jugada = self.jugada_maquina_tonta()
         elif tipo_jugador == 'L':
@@ -568,11 +550,13 @@ class Pargammon(object):
         jugador_actual=self.obtener_jugador_actual()
         jugador_idx = self.FICHAS.index(jugador_actual)
         tipo_jugador = self.tipos_jugadores[jugador_idx]
-#Aqui se tiene que añadir una funcion que compruebe que el texto introducido es válido y que la cantidad de caracteres no supera las de los dados
-        if tipo_jugador in ('T', 'L') and txt_jugada is None:
+
+        if tipo_jugador in ('T', 'L'):
             txt_jugada = self.obtener_jugada_automatica()
             print(f"Jugada: {txt_jugada}")
-        #jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
+        else:
+            txt_jugada = input("Jugada: ")
+        jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
         #print(jugadas_posibles)
 
         while not jugada_realizada:
@@ -597,18 +581,7 @@ def main():
     params = map(int, input("Numero de columnas, fichas y dados = ").split())
     juego = Pargammon(*params)
     while juego.cambiar_turno():
-        resultado = None
-        while resultado is not None:
-            jugador_actual = juego.obtener_jugador_actual()
-            jugador_idx = juego.FICHAS.index(jugador_actual)
-
-            if juego.tipos_jugadores[jugador_idx] == 'H':
-                resultado = juego.jugar(input("Jugada: "))
-            else:
-                resultado = juego.jugar()  # Sin parámetro para jugada automática
-
-            if resultado is not None:
-                print(resultado)
+        print(juego.jugar(""))#Se ha decidido no utilizar este parametro, puesto que da problemas cuando la máquina es automática
 
 
 if __name__=="__main__":
