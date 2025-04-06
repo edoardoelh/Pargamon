@@ -254,11 +254,6 @@ class Tablero(object):
                     #Aquí se tiene que añadir a la parte final de la jugada el valor de la misma para hacer luego la ordenación (array.sort(key=lambda L: L[1]), https://www.reddit.com/r/learnpython/comments/loex48/how_to_sort_by_the_second_element_in_a_2d_list/)
                     jugadas.append(jugada.copy())
                 jugada.pop()
-                copia_tablero = self.realizar_copia_tablero(tablero)
-                copia_fichas_sacadas = fichas_sacadas.copy()
-            else:
-                jugada.append(-1)
-                #Hay que añadir un
         return jugadas
 
       
@@ -490,7 +485,7 @@ class Pargammon(object):
         print(self)
 
         for i in range(len(self.tablero.fichas_sacadas)):
-            if list(self.tablero.fichas_sacadas.items())[i] == self.M and continua_partida == True:
+            if list(self.tablero.fichas_sacadas.items())[i][1] == self.M and continua_partida == True:
                 continua_partida = False
                 print(f"Han ganado los {self.FICHAS[i]}!")
 
@@ -557,7 +552,7 @@ class Pargammon(object):
         else:
             txt_jugada = input("Jugada: ")
         jugadas_posibles = self.tablero.get_jugadas_posibles(self.dados, jugador_actual)
-        #print(jugadas_posibles)
+        print(jugadas_posibles)
 
         while not jugada_realizada:
             movimientos: list = [-1 if ord(c.lower()) - ord('a') == -33 else ord(c.lower()) - ord('a') for c in txt_jugada]
