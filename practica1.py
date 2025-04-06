@@ -342,7 +342,7 @@ class Pargammon(object):
 
         N = len(tablero)  #numero total de columnas
         M = self.M  #numero inicial de fichas por jugador
-        copia_fichas_sacadas = fichas_sacadas.get(jugador, 0)  #fichas sacadas por este jugador
+        copia_fichas_sacadas = fichas_sacadas.get(jugador, 0) / 2  #fichas sacadas por este jugador
 
 
         puntos = 3 * (N + 1) * copia_fichas_sacadas #puntos base(3) por fichas sacadas
